@@ -136,7 +136,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if user_text == "💬 LiveChat":
         kb = InlineKeyboardMarkup([[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]])
-        await update.message.reply_text("Contact our support for assistance:", reply_markup=kb)
+        await update.message.reply_text("Feel free to contact our customer support ", reply_markup=kb)
     else:
         await update.message.reply_text(
             f"✅ **Received!**\n\nDetail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
