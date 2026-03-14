@@ -11,10 +11,8 @@ SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE, from_callback=False):
     if from_callback:
         user = update.callback_query.from_user
-        chat_id = update.callback_query.message.chat_id
     else:
         user = update.message.from_user
-        chat_id = update.message.chat_id
 
     first_name = user.first_name or "Trader"
     bold_name = f"**𝗛𝗲𝘆, {first_name}!**"
@@ -25,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE, from_callbac
         "Unlock your trading benefits:\n"
         "📊 **Premium XAUUSD (Gold) Signals**\n"
         "🎁 **Exclusive Gifts & Giveaways**\n"
-        "💎 **Access to VIP Community**\n\n"
+        "💎 **VIP Trading Access & Community**\n\n"
         "Please choose an option below:"
     )
 
@@ -100,19 +98,17 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     # --- Registered ---
-elif data == "registered":
-    kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
-    msg = (
-        "✅ **Registration Received!**\n\n"
-        "Please type and send your **Trading Account ID** below.\n"
-        "⏳ Verification usually takes **1-2 hours**.\n\n"
-        "Once verified, you will unlock the following VIP benefits:\n\n"
-        "📊 **Premium XAUUSD (Gold) Signals**\n"
-        "🎁 **Exclusive Gifts & Giveaways**\n"
-        "💎 **VIP Trading Access & Community**\n\n"
-        "💡 **Tip:** Keep your account ID handy to speed up verification."
-    )
-    await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
+    elif data == "registered":
+        kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
+        msg = (
+            "✅ **Registration Received!**\n\n"
+            "Please type and send your **Trading Account ID** below.\n"
+            "⏳ Verification usually takes **1-2 hours**.\n\n"
+            "Once verified, you will unlock the following VIP benefits:\n\n"
+            "📊 **Premium XAUUSD (Gold) Signals**\n"
+            "🎁 **Exclusive Gifts & Giveaways**\n"
+            "💎 **VIP Trading Access & Community**\n\n"
+            "💡 **Tip:** Keep your account ID handy to speed up verification."
         )
         await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
 
@@ -121,14 +117,14 @@ elif data == "registered":
         kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
         msg = (
             "🔁 **Partner Code Change**\n\n"
-            "Please send:\n"
+            "Please send the following to complete verification:\n"
             "📄 **Proof of IB Change**\n"
             "🆔 Your **Trading Account ID**\n"
             "⏳ Verification usually takes **1-2 hours**.\n\n"
-            "After verification, you will receive:\n"
-            "📊 **Premium XAUUSD Gold Signals**\n"
-            "🎁 **Gifts & Giveaways**\n"
-            "💎 **VIP Access**"
+            "After verification, you will unlock all VIP benefits:\n\n"
+            "📊 **Premium XAUUSD (Gold) Signals**\n"
+            "🎁 **Exclusive Gifts & Giveaways**\n"
+            "💎 **VIP Trading Access & Community**"
         )
         await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
 
