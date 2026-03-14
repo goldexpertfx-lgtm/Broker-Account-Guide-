@@ -100,16 +100,19 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     # --- Registered ---
-    elif data == "registered":
-        kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
-        msg = (
-            "✅ **Registration Received!**\n\n"
-            "Apna **Trading Account ID** niche type karke send karein.\n"
-            "⏳ Verification usually takes **1-2 hours**.\n\n"
-            "After verification, you will receive:\n"
-            "📊 **Premium XAUUSD Gold Signals**\n"
-            "🎁 **Gifts & Giveaways**\n"
-            "💎 **VIP Access**"
+elif data == "registered":
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
+    msg = (
+        "✅ **Registration Received!**\n\n"
+        "Please type and send your **Trading Account ID** below.\n"
+        "⏳ Verification usually takes **1-2 hours**.\n\n"
+        "Once verified, you will unlock the following VIP benefits:\n\n"
+        "📊 **Premium XAUUSD (Gold) Signals**\n"
+        "🎁 **Exclusive Gifts & Giveaways**\n"
+        "💎 **VIP Trading Access & Community**\n\n"
+        "💡 **Tip:** Keep your account ID handy to speed up verification."
+    )
+    await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
         )
         await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
 
