@@ -3,7 +3,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 import os
 
 TOKEN = os.environ.get("BOT_TOKEN")  # Set your token in Render
-
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
@@ -63,7 +62,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text(
             f"👋 Welcome back, {bold_name}!\n\n"
-            "If you already have an account but need help connecting it with our Partner Code, our support team is here to help you.\n\n"
+            "If you already have an account but need help connecting it with our Partner Code, our support team is here to assist you.\n\n"
             "💡 **Note:** VIP benefits only work for accounts registered using our Partner Code.",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="Markdown"
