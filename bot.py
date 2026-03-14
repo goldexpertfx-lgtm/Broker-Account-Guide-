@@ -7,7 +7,7 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# --- Main Menu & Keyboard Function ---
+# --- Main Menu & Keyboard Logic ---
 def get_welcome_content(first_name):
     bold_name = f"*{first_name}*"
     text = (
@@ -19,13 +19,13 @@ def get_welcome_content(first_name):
         "💎 *Access to our VIP Trading Community*\n\n"
         "Please choose an option below to continue:"
     )
-    # Inline buttons (Message ke niche)
+    # These are the WORKING buttons that appear inside the message
     inline_kb = [
         [InlineKeyboardButton("🆕 New Here", callback_data='new_here')],
         [InlineKeyboardButton("🔄 Old Here", callback_data='old_here')],
         [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
     ]
-    # Reply keyboard (Niche keyboard ki jaga par)
+    # This is the button at the very bottom
     reply_kb = ReplyKeyboardMarkup(
         [['🎁 Claim Your FREE Premium Gold VIP Access Now']], 
         resize_keyboard=True
@@ -36,9 +36,11 @@ def get_welcome_content(first_name):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name or "Trader"
     text, inline_markup, reply_markup = get_welcome_content(first_name)
+    # This sends the message WITH the buttons
     await update.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+    await update.message.reply_text("Select an option:", reply_markup=inline_markup)
 
-# ===== BUTTON HANDLER =====
+# ===== BUTTON HANDLER (Working Links & Actions) =====
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -51,11 +53,17 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(text, reply_markup=inline_markup, parse_mode="Markdown")
 
     elif data == "new_here":
-        keyboard = [[InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
+        keyboard = [
+            [InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)],
+            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
+        ]
         await query.edit_message_text(f"👋 Welcome {bold_name}!\n\nTo get VIP access, please register using our official partner link below.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "old_here":
-        keyboard = [[InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
+        keyboard = [
+            [InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)],
+            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
+        ]
         await query.edit_message_text(f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, contact our support team.\n\n💡 *Note:* VIP benefits are only for partner accounts.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "from_website":
