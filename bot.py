@@ -1,5 +1,5 @@
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 # --- Configuration ---
@@ -7,10 +7,19 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# --- Main Welcome Content Generator ---
-def get_welcome_content(first_name):
+# ===== START FUNCTION =====
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE, from_callback=False):
+    if from_callback:
+        user = update.callback_query.from_user
+        chat_id = update.callback_query.message.chat_id
+    else:
+        user = update.message.from_user
+        chat_id = update.message.chat_id
+
+    first_name = user.first_name or "Trader"
     bold_name = f"**𝗛𝗲𝘆, {first_name}!**"
-    text = (
+
+    welcome_text = (
         f"{bold_name}\n\n"
         "👋 **Welcome to Broker Account Guide Bot!**\n\n"
         "Unlock your trading benefits:\n"
@@ -19,34 +28,29 @@ def get_welcome_content(first_name):
         "💎 **Access to VIP Community**\n\n"
         "Please choose an option below:"
     )
-    # Inline buttons connected to the message
+
+    # Inline buttons for welcome message
     inline_kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("🆕 New Here", callback_data='new_here')],
         [InlineKeyboardButton("🔄 Old Here", callback_data='old_here')],
         [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
     ])
-    # Permanent bottom button (Reply Keyboard)
-    reply_kb = ReplyKeyboardMarkup([['💬 LiveChat']], resize_keyboard=True)
-    
-    return text, inline_kb, reply_kb
 
-# ===== START COMMAND =====
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    first_name = user.first_name or "Trader"
-    text, inline_markup, reply_markup = get_welcome_content(first_name)
+    if from_callback:
+        await update.callback_query.edit_message_text(
+            text=welcome_text,
+            reply_markup=inline_kb,
+            parse_mode="Markdown"
+        )
+    else:
+        await update.message.reply_text(
+            text=welcome_text,
+            reply_markup=inline_kb,
+            parse_mode="Markdown"
+        )
 
-    # Sending text, persistent keyboard, AND inline buttons in one go
-    await update.message.reply_text(
-        text=text,
-        reply_markup=reply_markup, # Permanent bottom button
-        parse_mode="Markdown"
-    )
-    # Update same message to include inline buttons immediately
-    await update.message.edit_reply_markup(reply_markup=inline_markup)
-
-# ===== BUTTON HANDLER (Includes Navigation/Back Logic) =====
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ===== BUTTON HANDLER =====
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
@@ -55,8 +59,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Back to Home ---
     if data == "start_again":
-        text, inline_markup, _ = get_welcome_content(first_name)
-        await query.edit_message_text(text=text, reply_markup=inline_markup, parse_mode="Markdown")
+        await start(update, context, from_callback=True)
 
     # --- New Here ---
     elif data == "new_here":
@@ -65,7 +68,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
         ])
         await query.edit_message_text(
-            f"👋 Welcome {bold_name}!\n\nTo get VIP access, please register using our official partner link below.",
+            f"👋 Welcome {bold_name}!\n\n"
+            "To get VIP access, please register using our official partner link below.",
             reply_markup=kb,
             parse_mode="Markdown"
         )
@@ -89,33 +93,63 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")],
             [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
         ])
-        await query.edit_message_text(f"🌐 Welcome {bold_name}!\n\nPlease select your status below:", reply_markup=kb, parse_mode="Markdown")
+        await query.edit_message_text(
+            f"🌐 Welcome {bold_name}!\n\nPlease select your status below:",
+            reply_markup=kb,
+            parse_mode="Markdown"
+        )
 
-    # --- Verification Flow ---
-    elif data in ["registered", "changed_ib"]:
+    # --- Registered ---
+    elif data == "registered":
         kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
-        msg = "✅ **Registration Received!**\n\nPlease send your **Trading Account ID** below.\n\n⏳ Verification takes **1-2 hours**."
+        msg = (
+            "✅ **Registration Received!**\n\n"
+            "Apna **Trading Account ID** niche type karke send karein.\n"
+            "⏳ Verification usually takes **1-2 hours**.\n\n"
+            "After verification, you will receive:\n"
+            "📊 **Premium XAUUSD Gold Signals**\n"
+            "🎁 **Gifts & Giveaways**\n"
+            "💎 **VIP Access**"
+        )
+        await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
+
+    # --- Changed IB ---
+    elif data == "changed_ib":
+        kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
+        msg = (
+            "🔁 **Partner Code Change**\n\n"
+            "Please send:\n"
+            "📄 **Proof of IB Change**\n"
+            "🆔 Your **Trading Account ID**\n"
+            "⏳ Verification usually takes **1-2 hours**.\n\n"
+            "After verification, you will receive:\n"
+            "📊 **Premium XAUUSD Gold Signals**\n"
+            "🎁 **Gifts & Giveaways**\n"
+            "💎 **VIP Access**"
+        )
         await query.edit_message_text(msg, reply_markup=kb, parse_mode="Markdown")
 
 # ===== MESSAGE HANDLER =====
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
-    
+    first_name = update.message.from_user.first_name or "Trader"
+    bold_name = f"**{first_name}**"
+
     if user_text == "💬 LiveChat":
         kb = InlineKeyboardMarkup([[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]])
         await update.message.reply_text("Contact our support for assistance:", reply_markup=kb)
     else:
-        # User sending ID or other info
         await update.message.reply_text(
             f"✅ **Received!**\n\nDetail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
             parse_mode="Markdown"
         )
 
+# ===== MAIN APPLICATION =====
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), message_handler))
     
     print("Bot is running...")
@@ -123,4 +157,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
