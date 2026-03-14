@@ -7,7 +7,7 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# --- Main Logic for Welcome Message & Keyboards ---
+# --- Main Logic for Welcome Assets ---
 def get_welcome_assets(first_name):
     bold_name = f"*{first_name}*"
     
@@ -29,7 +29,7 @@ def get_welcome_assets(first_name):
         [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
     ])
     
-    # 3. Persistent Reply Keyboard (Bottom button)
+    # 3. Persistent Bottom Keyboard (Always visible)
     reply_kb = ReplyKeyboardMarkup(
         [['💬 LiveChat']], 
         resize_keyboard=True
@@ -39,7 +39,7 @@ def get_welcome_assets(first_name):
 
 # ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Determine if this is a fresh /start or a "Back" button click
+    # Check if this is a fresh /start or a "Back" button click (callback)
     is_callback = update.callback_query is not None
     user = update.effective_user
     first_name = user.first_name or "Trader"
@@ -47,20 +47,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text, inline_markup, reply_markup = get_welcome_assets(first_name)
 
     if is_callback:
-        # Edit the existing message (for Back button)
+        # Edit existing message (for Back button flow)
         await update.callback_query.edit_message_text(
             text=text, 
             reply_markup=inline_markup, 
             parse_mode="Markdown"
         )
     else:
-        # Send a new message with the bottom keyboard
+        # Send new message with persistent bottom keyboard
         await update.message.reply_text(
             text=text, 
-            reply_markup=reply_markup, # Sets the persistent LiveChat button
+            reply_markup=reply_markup, 
             parse_mode="Markdown"
         )
-        # Attach the inline buttons to the same message
+        # Edit the SAME message to add the inline buttons immediately
         await update.message.edit_reply_markup(reply_markup=inline_markup)
 
 # ===== BUTTON HANDLER =====
@@ -92,7 +92,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)],
             [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
-        ] )
+        ])
         await query.edit_message_text(
             f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, please contact our support team.\n\n"
             "💡 *Note:* VIP benefits are only for accounts registered under our Partner Code.",
@@ -146,7 +146,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=keyboard
         )
     else:
-        # Handle Account ID submissions
+        # Handle account IDs
         await update.message.reply_text(
             f"✅ *Received!*\n\nYour Detail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
             parse_mode="Markdown"
