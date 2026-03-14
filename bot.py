@@ -7,9 +7,11 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# --- Main Menu & Keyboards ---
-def get_welcome_content(first_name):
+# --- Main Logic for Welcome Message & Keyboards ---
+def get_welcome_assets(first_name):
     bold_name = f"*{first_name}*"
+    
+    # 1. Welcome Text
     text = (
         f"Hey, {bold_name}!\n\n"
         "👋 *Welcome to Broker Account Guide Bot!*\n\n"
@@ -19,98 +21,152 @@ def get_welcome_content(first_name):
         "💎 *Access to our VIP Trading Community*\n\n"
         "Please choose an option below to continue:"
     )
-    # 🆕 INLINE BUTTONS (Jo message ke andar show honge)
-    inline_kb = [
+    
+    # 2. Inline Buttons (Inside the message)
+    inline_kb = InlineKeyboardMarkup([
         [InlineKeyboardButton("🆕 New Here", callback_data='new_here')],
         [InlineKeyboardButton("🔄 Old Here", callback_data='old_here')],
         [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
-    ]
-    # 💬 BOTTOM BUTTON (Jo hamesha keyboard ki jagah rahega)
+    ])
+    
+    # 3. Persistent Reply Keyboard (Bottom button)
     reply_kb = ReplyKeyboardMarkup(
         [['💬 LiveChat']], 
         resize_keyboard=True
     )
-    return text, InlineKeyboardMarkup(inline_kb), reply_kb
+    
+    return text, inline_kb, reply_kb
 
 # ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    first_name = update.effective_user.first_name or "Trader"
-    text, inline_markup, reply_markup = get_welcome_content(first_name)
+    # Determine if this is a fresh /start or a "Back" button click
+    is_callback = update.callback_query is not None
+    user = update.effective_user
+    first_name = user.first_name or "Trader"
     
-    # FIX: Yahan hum Inline Buttons (inline_markup) aur Bottom Button (reply_markup) dono bhej rahe hain
-    await update.message.reply_text(
-        text, 
-        reply_markup=reply_markup, # Ye bottom button set karega
-        parse_mode="Markdown"
-    )
-    # Buttons ko message ke sath attach karne ke liye ye zaruri hai
-    await update.message.reply_text(
-        "Please select an option:", 
-        reply_markup=inline_markup
-    )
+    text, inline_markup, reply_markup = get_welcome_assets(first_name)
+
+    if is_callback:
+        # Edit the existing message (for Back button)
+        await update.callback_query.edit_message_text(
+            text=text, 
+            reply_markup=inline_markup, 
+            parse_mode="Markdown"
+        )
+    else:
+        # Send a new message with the bottom keyboard
+        await update.message.reply_text(
+            text=text, 
+            reply_markup=reply_markup, # Sets the persistent LiveChat button
+            parse_mode="Markdown"
+        )
+        # Attach the inline buttons to the same message
+        await update.message.edit_reply_markup(reply_markup=inline_markup)
 
 # ===== BUTTON HANDLER =====
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
     first_name = query.from_user.first_name or "Trader"
     bold_name = f"*{first_name}*"
 
+    # --- Back to Home ---
     if data == "start_again":
-        text, inline_markup, _ = get_welcome_content(first_name)
-        await query.edit_message_text(text, reply_markup=inline_markup, parse_mode="Markdown")
+        await start(update, context)
 
+    # --- New Here ---
     elif data == "new_here":
-        keyboard = [[InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
-        await query.edit_message_text(f"👋 Welcome {bold_name}!\n\nTo get VIP access, please register using our official partner link below.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-
-    elif data == "old_here":
-        keyboard = [[InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
-        await query.edit_message_text(f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, contact our support team.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-
-    elif data == "from_website":
-        keyboard = [[InlineKeyboardButton("✅ Registered", callback_data="registered")], [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
-        await query.edit_message_text(f"🌐 Welcome {bold_name}!\n\nPlease select the correct option below:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-
-    elif data == "registered":
-        keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)],
+            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
+        ])
         await query.edit_message_text(
-            "✅ *Registration Received!*\n\n"
-            "Please type and send your *Trading Account ID* below.\n"
-            "⏳ Verification usually takes *1-2 hours*.\n\n"
-            "After verification, you will receive your VIP Access.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
+            f"👋 Welcome {bold_name}!\n\nTo get VIP access, please register using our official partner link below.",
+            reply_markup=keyboard,
             parse_mode="Markdown"
         )
 
-    elif data == "changed_ib":
-        keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
-        await query.edit_message_text("🔁 *Partner Code Change*\n\nPlease send proof of IB change and your Trading Account ID.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    # --- Old Here ---
+    elif data == "old_here":
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)],
+            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
+        ] )
+        await query.edit_message_text(
+            f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, please contact our support team.\n\n"
+            "💡 *Note:* VIP benefits are only for accounts registered under our Partner Code.",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
 
-# ===== HANDLE USER MESSAGES =====
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # --- From Website ---
+    elif data == "from_website":
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("✅ Registered", callback_data="registered")],
+            [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")],
+            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
+        ])
+        await query.edit_message_text(
+            f"🌐 Welcome {bold_name}!\n\nPlease select your status below so we can activate your VIP benefits:",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+
+    # --- Registered ---
+    elif data == "registered":
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
+        await query.edit_message_text(
+            "✅ *Registration Received!*\n\nPlease type and send your *Trading Account ID* below.\n\n"
+            "⏳ Verification usually takes *1-2 hours*.\n"
+            "After verification, you will receive your VIP Access.",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+
+    # --- Changed IB ---
+    elif data == "changed_ib":
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="from_website")]])
+        await query.edit_message_text(
+            "🔁 *Partner Code Change*\n\nPlease send proof of IB change and your *Trading Account ID* below.\n\n"
+            "⏳ Verification takes *1-2 hours*.",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+
+# ===== MESSAGE HANDLER (LiveChat & Account IDs) =====
+async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     
+    # Check if user clicked the persistent LiveChat button
     if user_text == "💬 LiveChat":
-        keyboard = [[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]]
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]])
         await update.message.reply_text(
             "Feel free to contact our customer support for any assistance.",
-            reply_markup=InlineKeyboardMarkup(keyboard)
+            reply_markup=keyboard
         )
     else:
+        # Handle Account ID submissions
         await update.message.reply_text(
             f"✅ *Received!*\n\nYour Detail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
             parse_mode="Markdown"
         )
 
+# ===== MAIN APPLICATION =====
 def main():
+    if not TOKEN:
+        print("Error: BOT_TOKEN not found!")
+        return
+
     app = ApplicationBuilder().token(TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button))
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), message_handler))
+    
+    print("Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-        
+    
