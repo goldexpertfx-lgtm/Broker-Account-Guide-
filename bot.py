@@ -7,7 +7,7 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# --- Main Menu & Persistent Keyboard ---
+# --- Main Menu & Keyboards ---
 def get_welcome_content(first_name):
     bold_name = f"*{first_name}*"
     text = (
@@ -19,13 +19,13 @@ def get_welcome_content(first_name):
         "💎 *Access to our VIP Trading Community*\n\n"
         "Please choose an option below to continue:"
     )
-    # Inline buttons (Main flow)
+    # 🆕 INLINE BUTTONS (Jo message ke andar show honge)
     inline_kb = [
         [InlineKeyboardButton("🆕 New Here", callback_data='new_here')],
         [InlineKeyboardButton("🔄 Old Here", callback_data='old_here')],
         [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
     ]
-    # Persistent Bottom Keyboard (Hamesha show hoga)
+    # 💬 BOTTOM BUTTON (Jo hamesha keyboard ki jagah rahega)
     reply_kb = ReplyKeyboardMarkup(
         [['💬 LiveChat']], 
         resize_keyboard=True
@@ -36,8 +36,18 @@ def get_welcome_content(first_name):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name or "Trader"
     text, inline_markup, reply_markup = get_welcome_content(first_name)
-    # Pehle keyboard set hoga phir message aayega
-    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+    
+    # FIX: Yahan hum Inline Buttons (inline_markup) aur Bottom Button (reply_markup) dono bhej rahe hain
+    await update.message.reply_text(
+        text, 
+        reply_markup=reply_markup, # Ye bottom button set karega
+        parse_mode="Markdown"
+    )
+    # Buttons ko message ke sath attach karne ke liye ye zaruri hai
+    await update.message.reply_text(
+        "Please select an option:", 
+        reply_markup=inline_markup
+    )
 
 # ===== BUTTON HANDLER =====
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -57,7 +67,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "old_here":
         keyboard = [[InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
-        await query.edit_message_text(f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, contact our support team.\n\n💡 *Note:* VIP benefits are only for partner accounts.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await query.edit_message_text(f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, contact our support team.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "from_website":
         keyboard = [[InlineKeyboardButton("✅ Registered", callback_data="registered")], [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
@@ -76,13 +86,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "changed_ib":
         keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
-        await query.edit_message_text("🔁 *Partner Code Change*\n\nPlease send proof of IB change and your Trading Account ID.\n⏳ Verification takes *1-2 hours*.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await query.edit_message_text("🔁 *Partner Code Change*\n\nPlease send proof of IB change and your Trading Account ID.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-# ===== HANDLE USER MESSAGES & LIVECHAT BUTTON =====
+# ===== HANDLE USER MESSAGES =====
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     
-    # Agar user niche wale LiveChat button par click kare
     if user_text == "💬 LiveChat":
         keyboard = [[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]]
         await update.message.reply_text(
@@ -90,25 +99,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
     else:
-        # User ki ID receive hone par message
         await update.message.reply_text(
             f"✅ *Received!*\n\nYour Detail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
             parse_mode="Markdown"
         )
 
 def main():
-    if not TOKEN:
-        print("Error: BOT_TOKEN not found!")
-        return
-
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    
-    print("Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-    
+        
