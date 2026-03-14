@@ -6,7 +6,6 @@ TOKEN = os.environ.get("BOT_TOKEN")
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
-# Welcome Text Function (for reuse)
 def get_welcome_content(first_name):
     bold_name = f"*{first_name}*"
     text = (
@@ -25,13 +24,11 @@ def get_welcome_content(first_name):
     ]
     return text, InlineKeyboardMarkup(keyboard)
 
-# ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name or "Trader"
     text, reply_markup = get_welcome_content(first_name)
     await update.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
 
-# ===== BUTTON HANDLER =====
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -44,95 +41,40 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
 
     elif data == "new_here":
-        keyboard = [
-            [InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)],
-            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
-        ]
-        await query.edit_message_text(
-            f"👋 Welcome {bold_name}!\n\n"
-            "If you want to get:\n"
-            "📊 *Premium XAUUSD Gold Signals*\n"
-            "🎁 *Free Gifts & Giveaways*\n"
-            "💎 *VIP Community Access*\n\n"
-            "You must register using our official partner link.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode="Markdown"
-        )
+        keyboard = [[InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
+        await query.edit_message_text(f"👋 Welcome {bold_name}!\n\nIf you want VIP access, you must register using our official partner link.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "old_here":
-        keyboard = [
-            [InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)],
-            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
-        ]
-        await query.edit_message_text(
-            f"👋 Welcome back, {bold_name}!\n\n"
-            "If you already have an account but need help connecting it with our Partner Code, our support team is here to assist you.\n\n"
-            "💡 *Note:* VIP benefits only work for accounts registered using our Partner Code.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode="Markdown"
-        )
+        keyboard = [[InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
+        await query.edit_message_text(f"👋 Welcome back, {bold_name}!\n\nIf you need help connecting your account, contact support.\n\n💡 *Note:* VIP benefits are for partner accounts only.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "from_website":
-        keyboard = [
-            [InlineKeyboardButton("✅ Registered", callback_data="registered")],
-            [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")],
-            [InlineKeyboardButton("🔙 Back", callback_data="start_again")]
-        ]
-        await query.edit_message_text(
-            f"🌐 Welcome {bold_name}!\n\n"
-            "If you came from our website, please select the correct option below so we can activate your VIP benefits.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode="Markdown"
-        )
+        keyboard = [[InlineKeyboardButton("✅ Registered", callback_data="registered")], [InlineKeyboardButton("🔁 Changed IB", callback_data="changed_ib")], [InlineKeyboardButton("🔙 Back", callback_data="start_again")]]
+        await query.edit_message_text(f"🌐 Welcome {bold_name}!\n\nPlease select the correct option below.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "registered":
-        keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
-        await query.edit_message_text(
-            "✅ *Registration Received!*\n\n"
-            "Apna *Trading Account ID* niche type karke send karein.\n"
-            "⏳ Verification usually takes *1-2 hours*.\n\n"
-            "After verification, you will receive your VIP Access.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode="Markdown"
-        )
+        keyboard = [[InlineKeyboardButton("💬 LiveChat", callback_data="live_chat")], [InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
+        await query.edit_message_text("✅ *Registration Received!*\n\nPlease type and send your *Trading Account ID* below.\n⏳ Verification usually takes *1-2 hours*.\n\nAfter verification, you will receive your VIP Access.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+
+    elif data == "live_chat":
+        keyboard = [[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)], [InlineKeyboardButton("🔙 Back", callback_data="registered")]]
+        await query.edit_message_text("Feel free to contact our customer support for any assistance.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
     elif data == "changed_ib":
         keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
-        await query.edit_message_text(
-            "🔁 *Partner Code Change*\n\n"
-            "Please send:\n"
-            "📄 *Proof of IB Change*\n"
-            "🆔 Your *Trading Account ID*\n"
-            "⏳ Verification usually takes *1-2 hours*.",
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode="Markdown"
-        )
+        await query.edit_message_text("🔁 *Partner Code Change*\n\nPlease send proof of IB change and your Trading Account ID.\n⏳ Verification takes *1-2 hours*.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-# ===== HANDLE USER MESSAGES =====
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
-    first_name = update.message.from_user.first_name or "Trader"
-    
-    await update.message.reply_text(
-        f"✅ *Received, {first_name}!*\n\n"
-        f"Your ID/Message: `{user_text}`\n\n"
-        "Hamari team isay jald verify karegi. Shukriya!",
-        parse_mode="Markdown"
-    )
+    await update.message.reply_text(f"✅ *Received!*\n\nYour ID: `{user_text}`\n\nOur team will verify this shortly. Thank you!", parse_mode="Markdown")
 
 def main():
-    if not TOKEN:
-        print("Error: BOT_TOKEN not found!")
-        return
-
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    
-    print("Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-    
+        
