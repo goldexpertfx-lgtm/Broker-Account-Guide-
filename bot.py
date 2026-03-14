@@ -4,23 +4,22 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 import os
 
 # ===== CONFIG =====
-TOKEN = os.environ.get("BOT_TOKEN")  # Render env variable
+TOKEN = os.environ.get("BOT_TOKEN")  # Set this in Render environment variable
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
 # ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.message.from_user.first_name or "User"
-    # Bold using MarkdownV2
     bold_name = f"**𝗛𝗲𝘆, {first_name}!**"
-    
+
     keyboard = [
         [InlineKeyboardButton("🆕 New Here", callback_data='new_here')],
         [InlineKeyboardButton("🔄 Old Here", callback_data='old_here')],
-        [InlineKeyboardButton("🌐 From Website", callback_data='from_website')]
+        [InlineKeyboardButton("🌐 Website User", callback_data='from_website')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
+
     welcome_text = (
         f"{bold_name}\n\n"
         "👋 **Welcome to Broker Account Guide Bot!**\n\n"
@@ -40,6 +39,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = query.from_user.first_name or "User"
     bold_name = f"**{first_name}**"
 
+    # --- New Here ---
     if data == "new_here":
         keyboard = [
             [InlineKeyboardButton("🚀 Join Now", url=PARTNER_LINK)],
@@ -56,6 +56,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
+    # --- Old Here ---
     elif data == "old_here":
         keyboard = [
             [InlineKeyboardButton("📩 Contact Now", url=SUPPORT_LINK)],
@@ -68,6 +69,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
+    # --- From Website ---
     elif data == "from_website":
         keyboard = [
             [InlineKeyboardButton("✅ Registered", callback_data="registered")],
@@ -81,12 +83,14 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
+    # --- Registered ---
     elif data == "registered":
         keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
         await query.edit_message_text(
-            "✅ **Registration Received**\n\n"
-            "Please send your **Trading Account ID** so we can verify it.\n\n"
-            "After verification you will receive:\n"
+            "✅ **Registration Received!**\n\n"
+            "Apna **Trading Account ID** niche type karke send karein.\n"
+            "Verification usually takes **1-2 hours**.\n\n"
+            "After verification, you will receive:\n"
             "📊 **Premium XAUUSD Gold Signals**\n"
             "🎁 **Gifts & Giveaways**\n"
             "💎 **VIP Access**",
@@ -94,14 +98,16 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
+    # --- Changed IB ---
     elif data == "changed_ib":
         keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="from_website")]]
         await query.edit_message_text(
             "🔁 **Partner Code Change**\n\n"
             "Please send:\n"
             "📄 **Proof of IB Change**\n"
-            "🆔 Your **Trading Account ID**\n\n"
-            "After verification you will receive:\n"
+            "🆔 Your **Trading Account ID**\n"
+            "Verification usually takes **1-2 hours**.\n\n"
+            "After verification, you will receive:\n"
             "📊 **Premium XAUUSD Gold Signals**\n"
             "🎁 **Gifts & Giveaways**\n"
             "💎 **VIP Access**",
@@ -109,8 +115,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
+    # --- Start Again / Back ---
     elif data == "start_again":
-        # Send start menu again
         await start(update, context)
 
 # ===== HANDLE USER MESSAGES =====
@@ -120,7 +126,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bold_name = f"**{first_name}**"
 
     await update.message.reply_text(
-        f"✅ Received your message {bold_name}:\n{user_text}\n\n"
+        f"✅ Received your message {bold_name}:\n`{user_text}`\n\n"
         "Our support team will verify and send your VIP benefits shortly.",
         parse_mode="Markdown"
     )
