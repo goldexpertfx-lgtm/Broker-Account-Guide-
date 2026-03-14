@@ -1,10 +1,9 @@
-# bot.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 import os
 
-# ===== CONFIG =====
-TOKEN = os.environ.get("BOT_TOKEN")  # Set this in Render environment variable
+TOKEN = os.environ.get("BOT_TOKEN")  # Set your token in Render
+
 PARTNER_LINK = "https://www.brokeraccountguide.com/"
 SUPPORT_LINK = "https://t.me/MuhammadPrince7"
 
@@ -64,7 +63,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text(
             f"👋 Welcome back, {bold_name}!\n\n"
-            "If you already have an account but need help connecting it with our Partner Code, our support team is here to help you.",
+            "If you already have an account but need help connecting it with our Partner Code, our support team is here to help you.\n\n"
+            "💡 **Note:** VIP benefits only work for accounts registered using our Partner Code.",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="Markdown"
         )
@@ -89,7 +89,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "✅ **Registration Received!**\n\n"
             "Apna **Trading Account ID** niche type karke send karein.\n"
-            "Verification usually takes **1-2 hours**.\n\n"
+            "⏳ Verification usually takes **1-2 hours**.\n\n"
             "After verification, you will receive:\n"
             "📊 **Premium XAUUSD Gold Signals**\n"
             "🎁 **Gifts & Giveaways**\n"
@@ -106,7 +106,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Please send:\n"
             "📄 **Proof of IB Change**\n"
             "🆔 Your **Trading Account ID**\n"
-            "Verification usually takes **1-2 hours**.\n\n"
+            "⏳ Verification usually takes **1-2 hours**.\n\n"
             "After verification, you will receive:\n"
             "📊 **Premium XAUUSD Gold Signals**\n"
             "🎁 **Gifts & Giveaways**\n"
