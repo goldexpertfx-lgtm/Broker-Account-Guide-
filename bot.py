@@ -39,29 +39,22 @@ def get_welcome_assets(first_name):
 
 # ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Check if this is a fresh /start or a "Back" button click (callback)
-    is_callback = update.callback_query is not None
     user = update.effective_user
     first_name = user.first_name or "Trader"
     
     text, inline_markup, reply_markup = get_welcome_assets(first_name)
 
-    if is_callback:
-        # Edit existing message (for Back button flow)
-        await update.callback_query.edit_message_text(
-            text=text, 
-            reply_markup=inline_markup, 
-            parse_mode="Markdown"
-        )
-    else:
-        # Send new message with persistent bottom keyboard
-        await update.message.reply_text(
-            text=text, 
-            reply_markup=reply_markup, 
-            parse_mode="Markdown"
-        )
-        # Edit the SAME message to add the inline buttons immediately
-        await update.message.edit_reply_markup(reply_markup=inline_markup)
+    # Sending text with BOTH the bottom keyboard and the inline buttons
+    await update.message.reply_text(
+        text=text, 
+        reply_markup=reply_markup, # Shows 💬 LiveChat at the bottom
+        parse_mode="Markdown"
+    )
+    # We send a second small prompt with the Inline Buttons to ensure they show up
+    await update.message.reply_text(
+        "Select your status:", 
+        reply_markup=inline_markup
+    )
 
 # ===== BUTTON HANDLER =====
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -73,7 +66,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # --- Back to Home ---
     if data == "start_again":
-        await start(update, context)
+        text, inline_markup, _ = get_welcome_assets(first_name)
+        await query.edit_message_text(text=text, reply_markup=inline_markup, parse_mode="Markdown")
 
     # --- New Here ---
     elif data == "new_here":
@@ -134,11 +128,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
-# ===== MESSAGE HANDLER (LiveChat & Account IDs) =====
+# ===== MESSAGE HANDLER =====
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     
-    # Check if user clicked the persistent LiveChat button
     if user_text == "💬 LiveChat":
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Chat Now ✅", url=SUPPORT_LINK)]])
         await update.message.reply_text(
@@ -146,7 +139,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=keyboard
         )
     else:
-        # Handle account IDs
         await update.message.reply_text(
             f"✅ *Received!*\n\nYour Detail: `{user_text}`\n\nOur team will verify this shortly. Thank you!",
             parse_mode="Markdown"
